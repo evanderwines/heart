@@ -1,0 +1,586 @@
+/* ==========================================================================
+   Glowing Text Heart Animation CSS
+   Aesthetics: Sleek, Premium, Dark Mode, Glassmorphic, Neon Glows
+   ========================================================================== */
+
+/* --- Custom Variables & Theme Tokens --- */
+:root {
+    /* Fonts */
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Outfit', sans-serif;
+
+    /* Theme-specific Colors (Crimson Default) */
+    --theme-primary: #ff2255;
+    --theme-primary-rgb: 255, 34, 85;
+    --theme-secondary: #ff7799;
+    --theme-bg-glow: rgba(43, 12, 21, 0.65);
+    
+    /* Typography Colors */
+    --color-text-main: #ffffff;
+    --color-text-muted: rgba(255, 255, 255, 0.6);
+    --color-text-glow: rgba(255, 34, 85, 0.8);
+    
+    /* Interface Glass Color Tokens */
+    --glass-bg: rgba(18, 9, 12, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-focus: rgba(255, 34, 85, 0.4);
+    --glass-shadow: rgba(0, 0, 0, 0.6);
+    
+    /* Dynamic parameters */
+    --glow-intensity: 15px;
+    --heartbeat-scale: 1;
+}
+
+/* Theme Classes dynamically toggled by JS */
+.theme-crimson {
+    --theme-primary: #ff2255;
+    --theme-primary-rgb: 255, 34, 85;
+    --theme-secondary: #ff7799;
+    --theme-bg-glow: rgba(43, 12, 21, 0.65);
+    --color-text-glow: rgba(255, 34, 85, 0.8);
+    --glass-border-focus: rgba(255, 34, 85, 0.4);
+}
+
+.theme-cyberpink {
+    --theme-primary: #ff007f;
+    --theme-primary-rgb: 255, 0, 127;
+    --theme-secondary: #00ffff;
+    --theme-bg-glow: rgba(45, 0, 35, 0.65);
+    --color-text-glow: rgba(255, 0, 127, 0.8);
+    --glass-border-focus: rgba(255, 0, 127, 0.4);
+}
+
+.theme-gold {
+    --theme-primary: #ffd700;
+    --theme-primary-rgb: 255, 215, 0;
+    --theme-secondary: #ff8800;
+    --theme-bg-glow: rgba(35, 25, 5, 0.65);
+    --color-text-glow: rgba(255, 215, 0, 0.8);
+    --glass-border-focus: rgba(255, 215, 0, 0.4);
+}
+
+.theme-amethyst {
+    --theme-primary: #bd00ff;
+    --theme-primary-rgb: 189, 0, 255;
+    --theme-secondary: #00e1ff;
+    --theme-bg-glow: rgba(25, 0, 40, 0.65);
+    --color-text-glow: rgba(189, 0, 255, 0.8);
+    --glass-border-focus: rgba(189, 0, 255, 0.4);
+}
+
+/* --- Base Layout --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #050203;
+    font-family: var(--font-body);
+    color: var(--color-text-main);
+}
+
+#app-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, var(--theme-bg-glow) 0%, #050203 85%);
+    transition: background 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Canvas Container */
+#canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+#heart-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+/* --- Center Typography Overlay --- */
+#center-typography {
+    position: absolute;
+    z-index: 2;
+    pointer-events: none; /* Make clicks pass through to canvas underneath */
+    text-align: center;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    /* Soft heartbeat animation linked to variable scale updated by JS */
+    transform: scale(var(--heartbeat-scale));
+    will-change: transform;
+    transition: transform 0.08s ease-out;
+}
+
+/* Background word "DESTROYED" */
+#bg-text-wrapper {
+    margin-bottom: -15px; /* Pull foreground closer */
+    transform: translateY(20px);
+}
+
+#bg-text {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 5vw, 4rem);
+    font-weight: 900;
+    letter-spacing: 0.45em;
+    color: rgba(var(--theme-primary-rgb), 0.15);
+    text-shadow: 0 0 20px rgba(var(--theme-primary-rgb), 0.3);
+    text-transform: uppercase;
+    transition: color 0.5s ease, text-shadow 0.5s ease;
+    animation: text-pulse-bg 4s ease-in-out infinite alternate;
+}
+
+/* Foreground word "Love you." */
+#fg-text-wrapper {
+    position: relative;
+    z-index: 3;
+}
+
+#fg-text {
+    font-family: var(--font-heading);
+    font-size: clamp(2.5rem, 7vw, 6rem);
+    font-weight: 700;
+    color: var(--color-text-main);
+    letter-spacing: -0.02em;
+    /* Clean white look with dynamic neon glow variable backing it */
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.4),
+                 0 0 var(--glow-intensity) var(--color-text-glow);
+    transition: text-shadow 0.5s ease;
+}
+
+/* Ambient Breathing Glow */
+#ambient-glow {
+    position: absolute;
+    width: 45%;
+    height: 45%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--theme-primary-rgb), 0.12) 0%, transparent 70%);
+    z-index: 1;
+    pointer-events: none;
+    animation: ambient-breathe 8s ease-in-out infinite alternate;
+}
+
+/* --- Floating Controls --- */
+.control-button {
+    position: absolute;
+    z-index: 10;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-main);
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.control-button span {
+    position: absolute;
+    right: 60px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateX(10px);
+    pointer-events: none;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.control-button:hover span {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+#audio-toggle {
+    top: 30px;
+    right: 95px; /* Offset to sit nicely next to settings */
+}
+
+#audio-toggle span {
+    right: auto;
+    left: 60px;
+    transform: translateX(-10px);
+}
+
+#audio-toggle:hover span {
+    transform: translateX(0);
+}
+
+#settings-toggle {
+    top: 30px;
+    right: 30px;
+}
+
+/* Glassmorphism Classes */
+.glass-button {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px) saturate(160%);
+    outline: none;
+}
+
+.glass-button:hover {
+    background: rgba(var(--theme-primary-rgb), 0.2);
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 15px rgba(var(--theme-primary-rgb), 0.4);
+    transform: scale(1.05);
+}
+
+.glass-button:active {
+    transform: scale(0.95);
+}
+
+/* --- Glassmorphic Sidebar Panel --- */
+#settings-sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 380px;
+    height: 100%;
+    background: rgba(12, 6, 8, 0.75);
+    border-left: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px) saturate(180%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -10px 0 40px var(--glass-shadow);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+#settings-sidebar.sidebar-closed {
+    transform: translateX(100%);
+}
+
+.sidebar-header {
+    padding: 30px 24px 20px 24px;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: linear-gradient(45deg, #ffffff, var(--theme-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.close-button {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: 2rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.3s ease;
+}
+
+.close-button:hover {
+    color: var(--theme-primary);
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+/* Scrollbar customization for webkit */
+.sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: var(--theme-primary);
+}
+
+.sidebar-footer {
+    padding: 20px 24px;
+    border-top: 1px solid var(--glass-border);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+/* --- Control Element Styling --- */
+.control-group {
+    border: none;
+    margin-bottom: 25px;
+}
+
+.control-group legend {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--theme-primary);
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(var(--theme-primary-rgb), 0.15);
+    width: 100%;
+}
+
+.input-wrapper {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.input-wrapper label {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.input-wrapper input[type="text"],
+.input-wrapper select {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-wrapper input[type="text"]:focus,
+.input-wrapper select:focus {
+    border-color: var(--glass-border-focus);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 10px rgba(var(--theme-primary-rgb), 0.15);
+}
+
+/* Checkbox Style */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--glass-border);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked {
+    background: var(--theme-primary);
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 8px rgba(var(--theme-primary-rgb), 0.4);
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked::after {
+    content: "✓";
+    font-size: 0.75rem;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.checkbox-wrapper label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Slider Controls */
+.slider-wrapper {
+    margin-bottom: 18px;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.slider-value {
+    color: var(--theme-primary);
+    font-family: var(--font-heading);
+}
+
+/* Range input customization */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    transition: background 0.3s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s, background 0.2s;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+    background: var(--theme-primary);
+    transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(var(--theme-primary-rgb), 0.6);
+}
+
+/* --- Theme Selection Grid --- */
+.theme-selector-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.theme-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.theme-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-btn.active {
+    background: rgba(var(--theme-primary-rgb), 0.12);
+    color: #ffffff;
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 12px rgba(var(--theme-primary-rgb), 0.25);
+}
+
+/* Reset Button */
+.reset-button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    margin-top: 10px;
+    color: #ffffff;
+}
+
+/* --- Keyframe Animations --- */
+@keyframes ambient-breathe {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1.1);
+        opacity: 1.1;
+    }
+}
+
+@keyframes text-pulse-bg {
+    0% {
+        text-shadow: 0 0 10px rgba(var(--theme-primary-rgb), 0.2);
+        opacity: 0.8;
+    }
+    100% {
+        text-shadow: 0 0 25px rgba(var(--theme-primary-rgb), 0.4);
+        opacity: 1.0;
+    }
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 480px) {
+    #settings-sidebar {
+        width: 100%;
+    }
+    
+    .control-button span {
+        display: none; /* Hide hover labels on very small screens */
+    }
+
+    #audio-toggle {
+        right: 85px;
+        top: 20px;
+    }
+
+    #settings-toggle {
+        right: 20px;
+        top: 20px;
+    }
+}

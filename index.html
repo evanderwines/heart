@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="An interactive, premium HTML5 Canvas animation featuring a pulsing heart composed of thousands of glowing, repeating 'i love you' text particles. Customize text, colors, heart rate, and particle physics.">
+    <title>Glowing Text Heart - Interactive Particle Animation</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Montserrat:ital,wght@0,300;0,700;1,900&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- App JavaScript (defer to load after DOM) -->
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <!-- Main Application Container -->
+    <main id="app-container" role="main">
+        <!-- Interactive Canvas for Particle Heart -->
+        <div id="canvas-container">
+            <canvas id="heart-canvas"></canvas>
+        </div>
+
+        <!-- Center Typography Overlay -->
+        <section id="center-typography" aria-label="Heart Text Content">
+            <div id="bg-text-wrapper">
+                <h2 id="bg-text" class="glow-text-bg"></h2>
+            </div>
+            <div id="fg-text-wrapper">
+                <h1 id="fg-text" class="glow-text-fg"></h1>
+            </div>
+        </section>
+
+        <!-- Custom Ambient Light Overlay -->
+        <div id="ambient-glow"></div>
+
+        <!-- Heartbeat Sound Controller -->
+        <button id="audio-toggle" aria-label="Toggle Heartbeat Sound" class="glass-button control-button" title="Toggle Heartbeat Sound">
+            <svg id="volume-icon" viewBox="0 0 24 24" width="24" height="24">
+                <!-- Muted by default -->
+                <path fill="currentColor" d="M3.63 3.63a.996.996 0 0 0 0 1.41L7.29 8.7 7 9H3v6h4l5 5v-6.71l4.29 4.29c-.38.28-.8.51-1.29.62v2.06c1.03-.23 1.96-.75 2.73-1.43l2.27 2.27a.996.996 0 1 0 1.41-1.41L5.05 3.63a.996.996 0 0 0-1.41 0zM10 15.17L7.83 13H5v-2h2.83l.88-.88L10 11.26v3.91zM12 4L9.91 6.09 12 8.18V4zm4 8c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.14 14.99 20.5 13.54 20.5 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71z"/>
+            </svg>
+            <span id="audio-status-text">Sound: Off</span>
+        </button>
+
+        <!-- Glassmorphic Settings Panel Toggle Button -->
+        <button id="settings-toggle" aria-label="Toggle Control Panel" class="glass-button control-button" title="Toggle Control Panel">
+            <svg id="settings-icon" viewBox="0 0 24 24" width="24" height="24">
+                <path fill="currentColor" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1a9.86 9.86 0 0 0-1.69-.99l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.99l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.99l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.99l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+            </svg>
+            <span id="settings-status-text">Settings</span>
+        </button>
+
+        <!-- Glassmorphic Customization Sidebar -->
+        <aside id="settings-sidebar" class="sidebar-closed" aria-label="Customization Controls">
+            <div class="sidebar-header">
+                <h2>Heart Engine Settings</h2>
+                <button id="close-sidebar" aria-label="Close Settings" class="close-button">&times;</button>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Text Configurations -->
+                <fieldset class="control-group">
+                    <legend>Text Settings</legend>
+                    <div class="input-wrapper">
+                        <label for="input-fg-text">Foreground Message</label>
+                        <input type="text" id="input-fg-text" value="Love you." maxlength="30" placeholder="e.g., Love you.">
+                    </div>
+                    <div class="input-wrapper">
+                        <label for="input-bg-text">Background Shadow Message</label>
+                        <input type="text" id="input-bg-text" value="DESTROYED" maxlength="25" placeholder="e.g., DESTROYED">
+                    </div>
+                    <div class="input-wrapper">
+                        <label for="input-particle-text">Particle Text Pattern</label>
+                        <input type="text" id="input-particle-text" value="i love you" maxlength="20" placeholder="e.g., i love you">
+                    </div>
+                </fieldset>
+
+                <!-- Color Palette -->
+                <fieldset class="control-group">
+                    <legend>Color Palette</legend>
+                    <div class="theme-selector-grid">
+                        <button type="button" class="theme-btn active" id="theme-crimson" data-theme="crimson">
+                            <span class="theme-dot" style="background: #ff2255;"></span>
+                            Crimson
+                        </button>
+                        <button type="button" class="theme-btn" id="theme-cyberpink" data-theme="cyberpink">
+                            <span class="theme-dot" style="background: #ff007f;"></span>
+                            Neon Pink
+                        </button>
+                        <button type="button" class="theme-btn" id="theme-gold" data-theme="gold">
+                            <span class="theme-dot" style="background: #ffd700;"></span>
+                            Warm Gold
+                        </button>
+                        <button type="button" class="theme-btn" id="theme-amethyst" data-theme="amethyst">
+                            <span class="theme-dot" style="background: #bd00ff;"></span>
+                            Amethyst
+                        </button>
+                    </div>
+                </fieldset>
+
+                <!-- Particle Engine Parameters -->
+                <fieldset class="control-group">
+                    <legend>Particle Engine</legend>
+                    
+                    <div class="slider-wrapper">
+                        <div class="slider-labels">
+                            <label for="slider-particle-count">Density (Count)</label>
+                            <span id="val-particle-count" class="slider-value">1200</span>
+                        </div>
+                        <input type="range" id="slider-particle-count" min="300" max="3000" step="50" value="1200">
+                    </div>
+
+                    <div class="slider-wrapper">
+                        <div class="slider-labels">
+                            <label for="slider-particle-size">Text Font Size</label>
+                            <span id="val-particle-size" class="slider-value">10px</span>
+                        </div>
+                        <input type="range" id="slider-particle-size" min="6" max="22" step="1" value="10">
+                    </div>
+                    
+                    <div class="slider-wrapper">
+                        <div class="slider-labels">
+                            <label for="slider-spread">Heart Dimensions (Scale)</label>
+                            <span id="val-spread" class="slider-value">12</span>
+                        </div>
+                        <input type="range" id="slider-spread" min="6" max="22" step="0.5" value="12">
+                    </div>
+                </fieldset>
+
+                <!-- Animation and Heartbeat Parameters -->
+                <fieldset class="control-group">
+                    <legend>Heartbeat & Interactivity</legend>
+
+                    <div class="slider-wrapper">
+                        <div class="slider-labels">
+                            <label for="slider-bpm">Heart Rate (BPM)</label>
+                            <span id="val-bpm" class="slider-value">65</span>
+                        </div>
+                        <input type="range" id="slider-bpm" min="30" max="180" step="5" value="65">
+                    </div>
+
+                    <div class="slider-wrapper">
+                        <div class="slider-labels">
+                            <label for="slider-glow">Neon Glow intensity</label>
+                            <span id="val-glow" class="slider-value">15px</span>
+                        </div>
+                        <input type="range" id="slider-glow" min="0" max="30" step="1" value="15">
+                    </div>
+
+                    <div class="input-wrapper">
+                        <label for="select-interaction">Mouse Hover Effect</label>
+                        <select id="select-interaction">
+                            <option value="repel" selected>Repel (Disperse Particles)</option>
+                            <option value="attract">Attract (Pull Particles)</option>
+                            <option value="vortex">Vortex (Swirl Particles)</option>
+                            <option value="none">No Force (Float Only)</option>
+                        </select>
+                    </div>
+
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" id="check-explode" checked>
+                        <label for="check-explode">Explode particles on mouse click</label>
+                    </div>
+                </fieldset>
+
+                <!-- Reset Settings -->
+                <button type="button" id="btn-reset" class="glass-button reset-button">Reset to Defaults</button>
+            </div>
+            
+            <div class="sidebar-footer">
+                <p>Crafted with love. Drag mouse/touch canvas to interact.</p>
+            </div>
+        </aside>
+    </main>
+</body>
+</html>
